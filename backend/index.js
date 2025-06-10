@@ -8,30 +8,56 @@ import { executeJava } from './executeJava.js';
 import { aiCodeReview } from './aiCodeReview.js';
 import { chatBot } from './chatBot.js';
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+const allowedOrigins = [
+    'http://localhost:5173',
+    'https://onlinejudge-optimized-et62.vercel.app/', 
+    'https://16.171.134.183',
+    process.env.FRONTEND_URL,
+    process.env.API_URL
+].filter(Boolean);
 
 app.use(cors({
-  origin: ['http://localhost:5173'],
-  methods: ['GET', 'POST'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+    origin: function (origin, callback) {
+        if (!origin) return callback(null, true);
+        
+        if (allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
+// Health check
+app.get('/health', (req, res) => {
+    res.json({
+        message: 'Code Execution Server is running',
+        status: 'success',
+        timestamp: new Date().toISOString(),
+        supportedLanguages: ['cpp', 'c++', 'python', 'python3', 'py', 'java']
+    });
+});
+
 function getExecutor(language) {
-  const lang = language.toLowerCase();
-  switch (lang) {
-    case 'cpp':
-    case 'c++':
-      return executeCpp;
-    case 'python':
-    case 'python3':
-    case 'py':
-      return executePy;
-    case 'java':
-      return executeJava;
-    default:
-      throw new Error(`Unsupported language: ${language}`);
-  }
+    const lang = language.toLowerCase();
+    switch (lang) {
+        case 'cpp':
+        case 'c++':
+            return executeCpp;
+        case 'python':
+        case 'python3':
+        case 'py':
+            return executePy;
+        case 'java':
+            return executeJava;
+        default:
+            throw new Error(`Unsupported language: ${language}`);
+    }
 }
 
 app.post('/run', async (req, res) => {
@@ -81,22 +107,21 @@ app.post("/ai-review", async (req, res) => {
 });
 
 app.post("/chat-bot", async (req, res) => {
-  const { message } = req.body;
-  if (!message) {
-    return res.status(400).json({ success: false, error: "Message is required" });
-  }
-  try {
-    const response = await chatBot(message);
-    res.json({ response });
-  } catch (error) {
-    console.error('Chat bot error:', error.message);
-    return res.status(500).json({
-      success: false,
-      error: error.message,
-    });
-  }
-}
-);
+    const { message } = req.body;
+    if (!message) {
+        return res.status(400).json({ success: false, error: "Message is required" });
+    }
+    try {
+        const response = await chatBot(message);
+        res.json({ response });
+    } catch (error) {
+        console.error('Chat bot error:', error.message);
+        return res.status(500).json({
+            success: false,
+            error: error.message,
+        });
+    }
+});
 
 app.get('/', (req, res) => {
     res.json({
@@ -106,7 +131,9 @@ app.get('/', (req, res) => {
     });
 });
 
-app.listen(process.env.PORT || 8000, () => {
-  console.log('Server is running on port 8000');
-  console.log('Supported languages: C++, Python 3, Java');
+const PORT = process.env.PORT || 8000;
+
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Code Execution Server is running on port ${PORT}`);
+    console.log('Supported languages: C++, Python 3, Java');
 });

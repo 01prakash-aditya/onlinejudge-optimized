@@ -9,43 +9,44 @@ services:
       - "27017:27017"
     volumes:
       - mongo-data:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=oj
 
   api:
     build:
       context: .
       dockerfile: Dockerfile
+    container_name: oj-api
+    restart: always
     ports:
       - "3000:3000"
-    volumes:
-      - .:/app
-      - /app/node_modules
     environment:
+      - NODE_ENV=production
       - MONGO_URI=mongodb://mongo:27017/oj
+      - PORT=3000
     depends_on:
       - mongo
+    networks:
+      - app-network
 
   backend:
     build: ./backend
+    container_name: oj-backend
+    restart: always
     ports:
       - "8000:8000"
-    volumes:
-      - ./backend:/app
-      - /app/node_modules
-    depends_on:
-      - api
-
-  client:
-    build: ./client
-    command: npm run dev
-    ports:
-      - "5173:5173"
-    volumes:
-      - ./client:/app:cached
-      - /app/node_modules
-    depends_on:
-      - api
     environment:
-      - IS_DOCKER=true
+      - NODE_ENV=production
+      - PORT=8000
+    depends_on:
+      - api
+      - mongo
+    networks:
+      - app-network
 
 volumes:
   mongo-data:
+
+networks:
+  app-network:
+    driver: bridge

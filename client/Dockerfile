@@ -1,14 +1,29 @@
-FROM node:18
+# api/Dockerfile
+FROM node:18-alpine
+
+# Set production environment
+ENV NODE_ENV=production
 
 WORKDIR /app
 
+# Copy package files
 COPY package.json package-lock.json ./
-RUN npm ci
 
+# Install dependencies (only production dependencies)
+RUN npm ci --only=production && npm cache clean --force
+
+# Copy application code
 COPY . .
 
-EXPOSE 5173
+# Create non-root user for security
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S nodejs -u 1001
 
-ENV IS_DOCKER=true
+# Change ownership of the app directory
+RUN chown -R nodejs:nodejs /app
+USER nodejs
 
-CMD ["npm", "run", "dev"]
+EXPOSE 3000
+
+# Use node directly instead of npm for better signal handling
+CMD ["node", "index.js"]
