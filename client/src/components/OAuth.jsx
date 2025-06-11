@@ -4,8 +4,6 @@ import { useDispatch } from 'react-redux';
 import { loginSuccess } from '../redux/user/userSlice';
 import { useNavigate } from 'react-router-dom';
 
-const MAIN_API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
-
 export default function OAuth() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -21,18 +19,20 @@ export default function OAuth() {
             const username = user.email?.split('@')[0].toLowerCase()+
         Math.random().toString(36).slice(-6) || 'google_user';
             
-            const res = await fetch(`${MAIN_API_BASE_URL}/api/auth/google`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    username: username,
-                    fullName: user.displayName || 'Google User',
-                    email: user.email,
-                    dob: new Date().toISOString(), // Today's date as fallback
-                    profilePicture: user.photoURL,
-                }),
+            // Replace the fetch call in handleGoogleClick
+            const res = await fetch(createApiUrl("/api/auth/google"), {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+                username: username,
+                fullName: user.displayName || 'Google User',
+                email: user.email,
+                dob: new Date().toISOString(),
+                profilePicture: user.photoURL,
+            }),
             });
             
             if (!res.ok) {

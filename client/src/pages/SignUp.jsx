@@ -1,12 +1,11 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import OAuth from "../components/OAuth.jsx";
-
-const MAIN_API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+import { createApiUrl } from '../config/api.js';
 
 export default function SignUp() {
   const [formData, setFormData] = useState({
-    role: 'user'
+    role: 'user' // Default role
   });
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -32,6 +31,7 @@ export default function SignUp() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    // Validate admin secret code if admin role is selected
     if (formData.role === 'admin' && !formData.secretCode) {
       setError('Secret code is required for admin registration');
       return;
@@ -41,7 +41,7 @@ export default function SignUp() {
       setLoading(true);
       setError(false);
       
-      const res = await fetch(`${MAIN_API_BASE_URL}/api/auth/signup`, {
+      const res = await fetch(createApiUrl("/api/auth/signup"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

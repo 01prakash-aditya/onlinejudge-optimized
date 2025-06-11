@@ -2,8 +2,7 @@ import { useSelector } from 'react-redux';
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { updateUserSuccess, updateUserStart, updateUserFailure, deleteUserFailure, deleteUserSuccess, deleteUserStart, SignOut } from '../redux/user/userSlice.js';
-
-const MAIN_API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+import { createApiUrl } from '../config/api.js';
 
 export default function Profile() {
   const dispatch = useDispatch();
@@ -30,7 +29,7 @@ export default function Profile() {
     setLoading(true);
     try {
       dispatch(updateUserStart());
-      const res = await fetch(`${MAIN_API_BASE_URL}/api/user/update/${currentUser._id}`, {
+      const res = await fetch(`/api/user/update/${currentUser._id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -59,7 +58,7 @@ export default function Profile() {
     if (window.confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
       try{
         dispatch(deleteUserStart());
-        const res = await fetch(`${MAIN_API_BASE_URL}/api/user/delete/${currentUser._id}`, {
+        const res = await fetch(`/api/user/delete/${currentUser._id}`, {
           method: 'DELETE',
           credentials: 'include', 
         });
@@ -76,7 +75,7 @@ export default function Profile() {
 
   const handleSignOut = async () => {
     try {
-      await fetch(`${MAIN_API_BASE_URL}/api/auth/signout`, {
+      await fetch(createApiUrl('/api/auth/signout'), {
         credentials: 'include' 
       });
       dispatch(SignOut());

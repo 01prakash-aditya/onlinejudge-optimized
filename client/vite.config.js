@@ -8,28 +8,17 @@ export default defineConfig({
     include: ['@reduxjs/toolkit'],
   },
   server: {
-    host: true,
+    host: '0.0.0.0',
     port: 5173,
-    proxy: {
-      '/api': {
-        target: process.env.VITE_API_BASE_URL || 'http://localhost:3000',
-        changeOrigin: true,
-        secure: false,
-      },
-    },
+    // Remove proxy for production - we'll handle API calls directly
   },
   build: {
     outDir: 'dist',
     sourcemap: false,
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom'],
-          router: ['react-router-dom'],
-          redux: ['@reduxjs/toolkit', 'react-redux'],
-          firebase: ['firebase/auth', 'firebase/app']
-        }
-      }
-    }
+    minify: 'terser',
+  },
+  define: {
+    // Ensure environment variables are available
+    'process.env': process.env
   }
 })

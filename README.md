@@ -103,6 +103,7 @@ Leaderboard View: Real-time rankings and statistics
 
     ```bash
     npm install
+    npm i @google/genai
     ```
 
 3. Create a `.env` file with the following variables:
@@ -157,6 +158,7 @@ Leaderboard View: Real-time rankings and statistics
 
     ```bash
     npm install
+    npm i mongoose
     ```
 
 2. Create a `.env` file with the following variables:

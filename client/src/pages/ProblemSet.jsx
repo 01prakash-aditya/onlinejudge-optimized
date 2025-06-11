@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-
-const MAIN_API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+import { createApiUrl } from '../config/api.js';
 
 export default function ProblemSet() {
   const navigate = useNavigate();
@@ -19,7 +18,7 @@ export default function ProblemSet() {
     const fetchSolvedProblems = async () => {
       if (currentUser) {
         try {
-          const response = await fetch(`${MAIN_API_BASE_URL}/api/user/solved-problems`, {
+          const response = await fetch(createApiUrl('/api/user/solved-problems'), {
             credentials: 'include'
           });
           const data = await response.json();
@@ -39,7 +38,7 @@ export default function ProblemSet() {
     const fetchProblems = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`${MAIN_API_BASE_URL}/api/problems/approved`);
+        const response = await fetch(createApiUrl('/api/problems/approved'));
         const data = await response.json();
         
         if (data.success) {
@@ -188,81 +187,89 @@ export default function ProblemSet() {
         </div>
       </div>
       
-      {/* Problems Table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Difficulty</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rating</th>
-              <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {filteredProblems.map((problem, index) => (
-              <tr 
-                key={problem._id} 
-                className={`hover:bg-gray-50 ${isProblemSolved(problem._id) ? 'bg-green-50' : ''}`}
-              >
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  <div className="flex items-center gap-2">
-                    {index + 1}
-                    {isProblemSolved(problem._id) && (
-                      <span className="text-green-600 text-lg">✓</span>
-                    )}
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  <div className="flex items-center gap-2">
-                    <div className="font-medium text-gray-900">{problem.title}</div>
-                    {isProblemSolved(problem._id) && (
-                      <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full font-medium">
-                        Solved
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex flex-wrap gap-1 mt-1">
-                    {problem.tags.map((tag, tagIndex) => (
-                      <span key={tagIndex} className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm">
-                  <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getDifficultyColor(problem.difficulty)}`}>
-                    {problem.difficulty.charAt(0).toUpperCase() + problem.difficulty.slice(1)}
+      {/* Problems Table with Responsive Width */}
+<div className="bg-white rounded-lg shadow overflow-hidden">
+  {/* Mobile scroll hint */}
+  <div className="sm:hidden bg-gray-50 px-4 py-2 text-xs text-gray-600 border-b">
+    ← Swipe left to see more columns
+  </div>
+  
+  {/* Scrollable table container - only scroll on mobile/tablet */}
+  <div className="overflow-x-auto lg:overflow-x-visible">
+    <table className="w-full divide-y divide-gray-200 lg:min-w-0" style={{ minWidth: '700px' }}>
+      <thead className="bg-gray-50">
+        <tr>
+          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap w-16">#</th>
+          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap lg:w-auto">Title</th>
+          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap w-24">Difficulty</th>
+          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap w-20">Rating</th>
+          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap w-24">Action</th>
+        </tr>
+      </thead>
+      <tbody className="bg-white divide-y divide-gray-200">
+        {filteredProblems.map((problem, index) => (
+          <tr 
+            key={problem._id} 
+            className={`hover:bg-gray-50 ${isProblemSolved(problem._id) ? 'bg-green-50' : ''}`}
+          >
+            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 w-16">
+              <div className="flex items-center gap-2">
+                {index + 1}
+                {isProblemSolved(problem._id) && (
+                  <span className="text-green-600 text-lg">✓</span>
+                )}
+              </div>
+            </td>
+            <td className="px-6 py-4 text-sm text-gray-500 lg:w-auto" style={{ minWidth: '300px' }}>
+              <div className="flex items-center gap-2 mb-1">
+                <div className="font-medium text-gray-900">{problem.title}</div>
+                {isProblemSolved(problem._id) && (
+                  <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full font-medium whitespace-nowrap">
+                    Solved
                   </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{problem.rating}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <button
-                    onClick={() => handleProblemClick(problem)}
-                    className={`px-3 py-1 rounded-md ${
-                      isProblemSolved(problem._id)
-                        ? 'text-green-600 hover:text-green-900 bg-green-50 hover:bg-green-100'
-                        : 'text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100'
-                    }`}
-                  >
-                    {isProblemSolved(problem._id) ? 'Review' : 'Solve'}
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      
-      {filteredProblems.length === 0 && !loading && (
-        <div className="text-center p-8 text-gray-500">
-          {problems.length === 0 
-            ? "No problems available yet. Check back later!" 
-            : "No problems match your filters. Try adjusting your search criteria."
-          }
-        </div>
-      )}
+                )}
+              </div>
+              <div className="flex flex-wrap gap-1 mt-1">
+                {problem.tags.map((tag, tagIndex) => (
+                  <span key={tagIndex} className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 whitespace-nowrap">
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm w-24">
+              <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getDifficultyColor(problem.difficulty)} whitespace-nowrap`}>
+                {problem.difficulty.charAt(0).toUpperCase() + problem.difficulty.slice(1)}
+              </span>
+            </td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 w-20">{problem.rating}</td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium w-24">
+              <button
+                onClick={() => handleProblemClick(problem)}
+                className={`px-3 py-1 rounded-md whitespace-nowrap ${
+                  isProblemSolved(problem._id)
+                    ? 'text-green-600 hover:text-green-900 bg-green-50 hover:bg-green-100'
+                    : 'text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100'
+                }`}
+              >
+                {isProblemSolved(problem._id) ? 'Review' : 'Solve'}
+              </button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{filteredProblems.length === 0 && !loading && (
+  <div className="text-center p-8 text-gray-500">
+    {problems.length === 0 
+      ? "No problems available yet. Check back later!" 
+      : "No problems match your filters. Try adjusting your search criteria."
+    }
+  </div>
+)}
       
       {/* Featured Problem Section */}
       {filteredProblems.length > 0 && (
@@ -270,15 +277,15 @@ export default function ProblemSet() {
           <h2 className="text-2xl font-semibold mb-4 text-slate-800">Featured Problem</h2>
           
           <div className={`p-5 rounded-lg shadow ${isProblemSolved(filteredProblems[0]._id) ? 'bg-green-50 border border-green-200' : 'bg-white'}`}>
-            <div className="flex justify-between items-start mb-4">
-              <div>
+            <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-4">
+              <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
                   <h3 className="text-xl font-semibold">{filteredProblems[0].title}</h3>
                   {isProblemSolved(filteredProblems[0]._id) && (
                     <span className="text-green-600 text-xl">✓</span>
                   )}
                 </div>
-                <div className="flex items-center gap-2 mt-1">
+                <div className="flex items-center gap-2 mt-1 flex-wrap">
                   <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getDifficultyColor(filteredProblems[0].difficulty)}`}>
                     {filteredProblems[0].difficulty.charAt(0).toUpperCase() + filteredProblems[0].difficulty.slice(1)}
                   </span>
@@ -292,7 +299,7 @@ export default function ProblemSet() {
               </div>
               <button
                 onClick={() => handleProblemClick(filteredProblems[0])}
-                className={`px-4 py-2 rounded-lg ${
+                className={`px-4 py-2 rounded-lg whitespace-nowrap ${
                   isProblemSolved(filteredProblems[0]._id)
                     ? 'bg-green-600 text-white hover:bg-green-700'
                     : 'bg-blue-600 text-white hover:bg-blue-700'
@@ -310,7 +317,7 @@ export default function ProblemSet() {
                   <h4 className="text-lg font-medium mb-2">Example Test Cases:</h4>
                   <div className="grid gap-4 mb-4">
                     {filteredProblems[0].testCases.slice(0, 2).map((testCase, index) => (
-                      <div key={index} className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
+                      <div key={index} className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
                         <div>
                           <p className="text-sm font-medium text-gray-700 mb-1">Input:</p>
                           <pre className="bg-gray-100 p-3 rounded text-sm overflow-x-auto">

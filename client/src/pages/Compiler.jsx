@@ -3,9 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { compileAndRun } from '../services/api.js';
 import { updateUserSuccess } from '../redux/user/userSlice.js';
-
-const MAIN_API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
-const MAIN_API_COMPILER_URL = import.meta.env.VITE_CODE_EXECUTION_URL || 'http://localhost:3000';
+import { createApiUrl } from '../config/api.js';
 
 export default function Compiler() {
   const dispatch = useDispatch();
@@ -72,7 +70,7 @@ export default function Compiler() {
     const fetchSolvedProblems = async () => {
       if (currentUser) {
         try {
-          const response = await fetch(`${MAIN_API_BASE_URL}/api/user/solved-problems`, {
+          const response = await fetch(createApiUrl('/api/user/solved-problems'), {
             credentials: 'include'
           });
           const data = await response.json();
@@ -242,7 +240,7 @@ export default function Compiler() {
     setStatusMessage('Getting AI review...');
     
     try {
-      const response = await fetch(`${MAIN_API_COMPILER_URL}/ai-review`, {
+      const response = await fetch('http://localhost:8000/ai-review', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -282,7 +280,7 @@ export default function Compiler() {
     setReviewType('chat');
     
     try {
-      const response = await fetch(`${MAIN_API_COMPILER_URL}/chat-bot`, {
+      const response = await fetch('http://localhost:8000/chat-bot', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -384,7 +382,7 @@ export default function Compiler() {
     setStatusMessage('Submitting solution...');
     
     try {
-      const response = await fetch(`${MAIN_API_BASE_URL}/api/user/submit-solution`, {
+      const response = await fetch(createApiUrl('/api/user/submit-solution'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -437,6 +435,7 @@ export default function Compiler() {
     setAllTestsPassed(false);
   }, [code]);
 
+  // Function to format AI review text with proper headings
   const formatAIReview = (reviewText) => {
     if (!reviewText) return '';
     
@@ -445,6 +444,7 @@ export default function Compiler() {
       .replace(/\n/g, '<br>');
   };
 
+  // Get language-specific syntax highlighting class
   const getLanguageClass = () => {
     switch(language) {
       case 'java': return 'language-java';
