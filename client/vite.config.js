@@ -10,15 +10,10 @@ export default defineConfig({
   server: {
     host: '0.0.0.0',
     port: 5173,
-    // Remove proxy for production - we'll handle API calls directly
   },
   build: {
     outDir: 'dist',
     sourcemap: false,
     minify: 'terser',
   },
-  define: {
-    // Ensure environment variables are available
-    'process.env': process.env
-  }
 })
