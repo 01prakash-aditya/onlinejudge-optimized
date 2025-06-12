@@ -21,6 +21,7 @@ const app = express();
 app.use(cors({
     origin:[
         'http://localhost:5173', 
+        'https://onlinejudge-optimized-zudr.vercel.app',
         'https://onlinejudge-optimized-zudr.vercel.app/',
     ],
     credentials: true, 

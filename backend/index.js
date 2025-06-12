@@ -16,6 +16,7 @@ app.use(cors({
   oorigin:[
         'http://localhost:5173', 
         'https://onlinejudge-optimized-zudr.vercel.app/',
+        'https://onlinejudge-optimized-zudr.vercel.app',
     ],
   methods: ['GET', 'POST', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
