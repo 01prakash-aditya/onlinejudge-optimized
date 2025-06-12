@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://16.171.134.183:8000' || 'http://localhost:8000';
+const API_BASE_URL = 'https://16.171.134.183' || 'http://localhost:8000';
 
 export const compileAndRun = async (language, code, input = '') => {
   try {
