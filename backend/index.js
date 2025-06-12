@@ -13,7 +13,10 @@ app.use(express.urlencoded({ extended: true }));
 
 // Updated CORS to allow network access
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://192.168.130.234:5173'], 
+  oorigin:[
+        'http://localhost:5173', 
+        'https://onlinejudge-optimized-zudr.vercel.app/',
+    ],
   methods: ['GET', 'POST', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
