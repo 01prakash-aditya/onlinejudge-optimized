@@ -1,6 +1,4 @@
-const API_BASE_URL = window.location.hostname === 'localhost' 
-  ? 'http://localhost:8000'
-  : `http://${window.location.hostname}:8000`;
+const API_BASE_URL = 'http://16.171.250.96:8000';
 
 export const compileAndRun = async (language, code, input = '') => {
   try {
