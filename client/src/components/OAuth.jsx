@@ -3,7 +3,6 @@ import { app } from '../assets/firebase';
 import { useDispatch } from 'react-redux';
 import { loginSuccess } from '../redux/user/userSlice';
 import { useNavigate } from 'react-router-dom';
-import { createApiUrl } from '../config/api.js';
 
 export default function OAuth() {
     const dispatch = useDispatch();
@@ -20,20 +19,18 @@ export default function OAuth() {
             const username = user.email?.split('@')[0].toLowerCase()+
         Math.random().toString(36).slice(-6) || 'google_user';
             
-            // Replace the fetch call in handleGoogleClick
-            const res = await fetch(createApiUrl("/api/auth/google"), {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            credentials: 'include',
-            body: JSON.stringify({
-                username: username,
-                fullName: user.displayName || 'Google User',
-                email: user.email,
-                dob: new Date().toISOString(),
-                profilePicture: user.photoURL,
-            }),
+            const res = await fetch("/api/auth/google", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    username: username,
+                    fullName: user.displayName || 'Google User',
+                    email: user.email,
+                    dob: new Date().toISOString(), // Today's date as fallback
+                    profilePicture: user.photoURL,
+                }),
             });
             
             if (!res.ok) {

@@ -2,7 +2,6 @@ import { useSelector } from 'react-redux';
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { updateUserSuccess, updateUserStart, updateUserFailure, deleteUserFailure, deleteUserSuccess, deleteUserStart, SignOut } from '../redux/user/userSlice.js';
-import { createApiUrl } from '../config/api.js';
 
 export default function Profile() {
   const dispatch = useDispatch();
@@ -75,7 +74,7 @@ export default function Profile() {
 
   const handleSignOut = async () => {
     try {
-      await fetch(createApiUrl('/api/auth/signout'), {
+      await fetch('/api/auth/signout', {
         credentials: 'include' 
       });
       dispatch(SignOut());

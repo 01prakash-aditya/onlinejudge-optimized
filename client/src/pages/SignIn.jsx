@@ -3,7 +3,6 @@ import { useState } from "react";
 import { loginStart, loginSuccess, loginFailure } from "../redux/user/userSlice";
 import { useDispatch, useSelector } from "react-redux";
 import OAuth from "../components/OAuth.jsx";
-import { createApiUrl } from '../config/api.js';
 
 export default function SignIn() {
   const [formData, setFormData] = useState({});
@@ -23,13 +22,11 @@ export default function SignIn() {
 
     dispatch(loginStart());
 
-    // Replace the fetch call in handleSubmit
-    const res = await fetch(createApiUrl("/api/auth/signin"), {
+    const res = await fetch("/api/auth/signin",{
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      credentials: 'include',
       body: JSON.stringify(formData),
     });
 

@@ -3,12 +3,15 @@ version: "3.8"
 services:
   mongo:
     image: mongo:6
-    container_name: oj-mongo
+    container_name: oj-mongodb
     restart: always
     ports:
       - "27017:27017"
+      
     volumes:
       - mongo-data:/data/db
+
+      
 
   api:
     build:

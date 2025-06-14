@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { Trash2, Edit3, Check, X, Plus, Eye, RefreshCw } from 'lucide-react';
-import { createApiUrl } from '../config/api';
 
 export default function ContributePage() {
   const { currentUser } = useSelector((state) => state.user);
@@ -44,7 +43,7 @@ export default function ContributePage() {
       console.log('Current user:', currentUser);
       console.log('User role:', currentUser?.role);
       
-      const res = await fetch(createApiUrl('/api/problems/all'), {
+      const res = await fetch('/api/problems/all', {
         method: 'GET',
         credentials: 'include',
         headers: {
@@ -171,7 +170,7 @@ export default function ContributePage() {
         rating: parseInt(formData.rating)
       };
 
-      const url = editingProblem ? createApiUrl(`/api/problems/update/${editingProblem._id}`) : createApiUrl('/api/problems/create');
+      const url = editingProblem ? `/api/problems/update/${editingProblem._id}` : '/api/problems/create';
       const method = editingProblem ? 'PUT' : 'POST';
 
       const res = await fetch(url, {
@@ -222,7 +221,7 @@ export default function ContributePage() {
     if (!confirm('Are you sure you want to delete this problem?')) return;
 
     try {
-      const res = await fetch(createApiUrl(`/api/problems/delete/${problemId}`), {
+      const res = await fetch(`/api/problems/delete/${problemId}`, {
         method: 'DELETE',
         credentials: 'include',
         headers: {
@@ -246,7 +245,7 @@ export default function ContributePage() {
 
   const handleApprove = async (problemId) => {
     try {
-      const res = await fetch(createApiUrl(`/api/problems/approve/${problemId}`), {
+      const res = await fetch(`/api/problems/approve/${problemId}`, {
         method: 'PATCH',
         credentials: 'include',
         headers: {

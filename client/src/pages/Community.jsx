@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { createApiUrl } from '../config/api';
 
 export default function Community() {
   const { currentUser } = useSelector((state) => state.user);
@@ -39,7 +38,7 @@ export default function Community() {
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
-        const response = await fetch(createApiUrl('/api/user/leaderboard'));
+        const response = await fetch('/api/user/leaderboard');
         const data = await response.json();
         if (data.success) {
           setLeaderboard(data.leaderboard);
@@ -59,7 +58,7 @@ export default function Community() {
   useEffect(() => {
     const fetchDiscussions = async () => {
       try {
-        const response = await fetch(createApiUrl('/api/community/discussions'));
+        const response = await fetch('/api/community/discussions');
         const data = await response.json();
         if (data.success) {
           setDiscussions(data.discussions);
@@ -84,7 +83,7 @@ export default function Community() {
 
     setIsSearching(true);
     try {
-      const response = await fetch(createApiUrl(`/api/community/discussions/search/${encodeURIComponent(query)}`));
+      const response = await fetch(`/api/community/discussions/search/${encodeURIComponent(query)}`);
       const data = await response.json();
       if (data.success) {
         setSearchResults(data.discussions);
@@ -138,7 +137,7 @@ export default function Community() {
     }
 
     try {
-      const response = await fetch(createApiUrl('/api/community/discussions'), {
+      const response = await fetch('/api/community/discussions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -175,7 +174,7 @@ export default function Community() {
   const handleUpdateDiscussion = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(createApiUrl(`/api/community/discussions/${editingDiscussion}`), {
+      const response = await fetch(`/api/community/discussions/${editingDiscussion}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -207,7 +206,7 @@ export default function Community() {
     }
 
     try {
-      const response = await fetch(createApiUrl(`/api/community/discussions/${discussionId}`), {
+      const response = await fetch(`/api/community/discussions/${discussionId}`, {
         method: 'DELETE',
         credentials: 'include'
       });

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { createApiUrl } from '../config/api.js';
 
 export default function ProblemSet() {
   const navigate = useNavigate();
@@ -18,7 +17,7 @@ export default function ProblemSet() {
     const fetchSolvedProblems = async () => {
       if (currentUser) {
         try {
-          const response = await fetch(createApiUrl('/api/user/solved-problems'), {
+          const response = await fetch('/api/user/solved-problems', {
             credentials: 'include'
           });
           const data = await response.json();
@@ -38,7 +37,7 @@ export default function ProblemSet() {
     const fetchProblems = async () => {
       try {
         setLoading(true);
-        const response = await fetch(createApiUrl('/api/problems/approved'));
+        const response = await fetch('/api/problems/approved');
         const data = await response.json();
         
         if (data.success) {

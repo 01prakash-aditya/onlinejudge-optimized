@@ -3,9 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { compileAndRun } from '../services/api.js';
 import { updateUserSuccess } from '../redux/user/userSlice.js';
-import { createApiUrl } from '../config/api.js';
 
-const BASE_URL_COM = 'http://16.171.134.183:8000' || 'http://localhost:8000'; 
 export default function Compiler() {
   const dispatch = useDispatch();
   const { currentUser } = useSelector((state) => state.user);
@@ -71,7 +69,7 @@ export default function Compiler() {
     const fetchSolvedProblems = async () => {
       if (currentUser) {
         try {
-          const response = await fetch(createApiUrl('/api/user/solved-problems'), {
+          const response = await fetch('/api/user/solved-problems', {
             credentials: 'include'
           });
           const data = await response.json();
@@ -241,7 +239,7 @@ export default function Compiler() {
     setStatusMessage('Getting AI review...');
     
     try {
-      const response = await fetch(`${BASE_URL_COM}/ai-review`, {
+      const response = await fetch('http://localhost:8000/ai-review', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -281,7 +279,7 @@ export default function Compiler() {
     setReviewType('chat');
     
     try {
-      const response = await fetch(`${BASE_URL_COM}/chat-bot`, {
+      const response = await fetch('http://localhost:8000/chat-bot', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -383,7 +381,7 @@ export default function Compiler() {
     setStatusMessage('Submitting solution...');
     
     try {
-      const response = await fetch(createApiUrl('/api/user/submit-solution'), {
+      const response = await fetch('/api/user/submit-solution', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
