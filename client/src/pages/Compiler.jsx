@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { compileAndRun } from '../services/api.js';
+import { compileAndRun, aiCodeReview, chatBot } from '../services/api.js';
 import { updateUserSuccess } from '../redux/user/userSlice.js';
 
 export default function Compiler() {
@@ -29,6 +29,7 @@ export default function Compiler() {
   const [chatPrompt, setChatPrompt] = useState('');
   const [reviewType, setReviewType] = useState('code');
   const location = useLocation();
+  const API_URL = import.meta.env.VITE_URL || 'http://localhost:3000';
 
   const defaultCodeTemplates = {
     cpp: '#include <iostream>\nusing namespace std;\n\nint main() {\n    cout << "Hello, AlgoU!" << endl;\n    return 0;\n}',
@@ -69,7 +70,7 @@ export default function Compiler() {
     const fetchSolvedProblems = async () => {
       if (currentUser) {
         try {
-          const response = await fetch('/api/user/solved-problems', {
+          const response = await fetch(`${API_URL}/api/user/solved-problems`, {
             credentials: 'include'
           });
           const data = await response.json();
@@ -237,29 +238,17 @@ export default function Compiler() {
 
     setIsReviewingCode(true);
     setStatusMessage('Getting AI review...');
-    
-    try {
-      const response = await fetch('http://localhost:8000/ai-review', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          language: language,
-          code: code,
-          input: input
-        })
-      });
 
-      const data = await response.json();
-      
-      if (response.ok && data.review) {
+    try {
+      const data = await aiCodeReview(language, code, input);
+
+      if (data.review) {
         setAiReview(data.review);
         setStatusMessage('AI review completed successfully');
+        setShowReviewModal(true);
       } else {
-        setStatusMessage(`AI review failed: ${data.error || 'Unknown error'}`);
+        setStatusMessage('AI review failed: No review returned');
       }
-
     } catch (error) {
       setStatusMessage(`AI review error: ${error.message}`);
       console.error('AI Review Error:', error);
@@ -268,43 +257,33 @@ export default function Compiler() {
     }
   };
 
-  const handleChatPrompt = async () => {
+  const handleChatBot = async () => {
     if (!chatPrompt.trim()) {
-      setStatusMessage('Please enter a prompt to chat with AI');
+      setStatusMessage('Please enter a message for the chat bot');
       return;
     }
 
     setIsChatting(true);
     setStatusMessage('Getting AI response...');
-    setReviewType('chat');
-    
-    try {
-      const response = await fetch('http://localhost:8000/chat-bot', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          message: chatPrompt
-        })
-      });
-      const data = await response.json();
-      
-      if (response.ok && data.response) {
-        setAiReview(data.response);
-        setStatusMessage('AI response completed successfully');
-        setChatPrompt(''); 
-      } else {
-        setStatusMessage(`AI chat failed: ${data.error || 'Unknown error'}`);
-      }
 
+    try {
+      const data = await chatBot(chatPrompt);
+      
+      if (data.response) {
+        setStatusMessage('Chat response received');
+        setChatPrompt('');
+        setAiReview(data.response);
+      } else {
+        setStatusMessage('Chat failed: No response returned');
+      }
     } catch (error) {
-      setStatusMessage(`AI chat error: ${error.message}`);
-      console.error('AI Chat Error:', error);
+      setStatusMessage(`Chat error: ${error.message}`);
+      console.error('Chat Bot Error:', error);
     } finally {
       setIsChatting(false);
     }
   };
+
 
   const handleTestAllCases = async () => {
     if (!selectedProblem || !selectedProblem.testCases || selectedProblem.testCases.length === 0) {
@@ -381,7 +360,7 @@ export default function Compiler() {
     setStatusMessage('Submitting solution...');
     
     try {
-      const response = await fetch('/api/user/submit-solution', {
+      const response = await fetch(`${API_URL}/api/user/submit-solution`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -815,7 +794,7 @@ export default function Compiler() {
           </div>
           
           <button
-            onClick={handleChatPrompt}
+            onClick={handleChatBot}
             disabled={isChatting || !chatPrompt.trim()}
             className="bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-300 text-white px-6 py-2 rounded-lg font-medium transition-colors flex items-center gap-2"
           >

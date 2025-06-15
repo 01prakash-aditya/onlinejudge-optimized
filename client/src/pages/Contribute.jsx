@@ -11,6 +11,7 @@ export default function ContributePage() {
   const [editingProblem, setEditingProblem] = useState(null);
   const [debugInfo, setDebugInfo] = useState(null);
   const [fetchLoading, setFetchLoading] = useState(false);
+  const API_URL = import.meta.env.VITE_URL || 'http://localhost:3000';
 
   const [formData, setFormData] = useState({
     title: '',
@@ -43,7 +44,7 @@ export default function ContributePage() {
       console.log('Current user:', currentUser);
       console.log('User role:', currentUser?.role);
       
-      const res = await fetch('/api/problems/all', {
+      const res = await fetch(`${API_URL}/api/problems/all`, {
         method: 'GET',
         credentials: 'include',
         headers: {
@@ -170,7 +171,7 @@ export default function ContributePage() {
         rating: parseInt(formData.rating)
       };
 
-      const url = editingProblem ? `/api/problems/update/${editingProblem._id}` : '/api/problems/create';
+      const url = editingProblem ? `${API_URL}/api/problems/update/${editingProblem._id}` : `${API_URL}/api/problems/create`;
       const method = editingProblem ? 'PUT' : 'POST';
 
       const res = await fetch(url, {
@@ -221,7 +222,7 @@ export default function ContributePage() {
     if (!confirm('Are you sure you want to delete this problem?')) return;
 
     try {
-      const res = await fetch(`/api/problems/delete/${problemId}`, {
+      const res = await fetch(`${API_URL}/api/problems/delete/${problemId}`, {
         method: 'DELETE',
         credentials: 'include',
         headers: {
@@ -245,7 +246,7 @@ export default function ContributePage() {
 
   const handleApprove = async (problemId) => {
     try {
-      const res = await fetch(`/api/problems/approve/${problemId}`, {
+      const res = await fetch(`${API_URL}/api/problems/approve/${problemId}`, {
         method: 'PATCH',
         credentials: 'include',
         headers: {

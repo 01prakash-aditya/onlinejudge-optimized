@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 export default function OAuth() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const API_URL = import.meta.env.VITE_URL || 'http://localhost:3000';
     
     const handleGoogleClick = async () => {
         try {   
@@ -19,7 +20,7 @@ export default function OAuth() {
             const username = user.email?.split('@')[0].toLowerCase()+
         Math.random().toString(36).slice(-6) || 'google_user';
             
-            const res = await fetch("/api/auth/google", {
+            const res = await fetch(`${API_URL}/api/auth/google`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

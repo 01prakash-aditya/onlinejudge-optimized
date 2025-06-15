@@ -12,12 +12,13 @@ export default function ProblemSet() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [solvedProblems, setSolvedProblems] = useState([]);
+  const API_URL = import.meta.env.VITE_URL || 'http://localhost:3000';
 
   useEffect(() => {
     const fetchSolvedProblems = async () => {
       if (currentUser) {
         try {
-          const response = await fetch('/api/user/solved-problems', {
+          const response = await fetch(`${API_URL}/api/user/solved-problems`, {
             credentials: 'include'
           });
           const data = await response.json();
@@ -37,7 +38,7 @@ export default function ProblemSet() {
     const fetchProblems = async () => {
       try {
         setLoading(true);
-        const response = await fetch('/api/problems/approved');
+        const response = await fetch(`${API_URL}/api/problems/approved`);
         const data = await response.json();
         
         if (data.success) {

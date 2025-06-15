@@ -11,9 +11,8 @@ import { chatBot } from './chatBot.js';
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Updated CORS to allow network access
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://192.168.130.234:5173'], 
+  origin: true, 
   methods: ['GET', 'POST', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));

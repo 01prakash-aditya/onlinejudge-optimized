@@ -18,6 +18,7 @@ export default function Profile() {
   const [loading, setLoading] = useState(false);
   const [updateSuccess, setUpdateSuccess] = useState(false);
   const [error, setError] = useState(null);
+  const API_URL = import.meta.env.VITE_URL || 'http://localhost:3000';
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
@@ -28,7 +29,7 @@ export default function Profile() {
     setLoading(true);
     try {
       dispatch(updateUserStart());
-      const res = await fetch(`/api/user/update/${currentUser._id}`, {
+      const res = await fetch(`${API_URL}/api/user/update/${currentUser._id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -57,7 +58,7 @@ export default function Profile() {
     if (window.confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
       try{
         dispatch(deleteUserStart());
-        const res = await fetch(`/api/user/delete/${currentUser._id}`, {
+        const res = await fetch(`${API_URL}/api/user/delete/${currentUser._id}`, {
           method: 'DELETE',
           credentials: 'include', 
         });
@@ -74,7 +75,7 @@ export default function Profile() {
 
   const handleSignOut = async () => {
     try {
-      await fetch('/api/auth/signout', {
+      await fetch(`${API_URL}/api/auth/signout`, {
         credentials: 'include' 
       });
       dispatch(SignOut());
