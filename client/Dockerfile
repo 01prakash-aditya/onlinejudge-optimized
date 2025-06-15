@@ -11,4 +11,6 @@ EXPOSE 5173
 
 ENV IS_DOCKER=true
 
+ENV NODE_ENV=production
+
 CMD ["npm", "run", "dev"]

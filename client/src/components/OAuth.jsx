@@ -25,6 +25,7 @@ export default function OAuth() {
                 headers: {
                     "Content-Type": "application/json",
                 },
+                credentials: 'include', // This is the key addition!
                 body: JSON.stringify({
                     username: username,
                     fullName: user.displayName || 'Google User',
