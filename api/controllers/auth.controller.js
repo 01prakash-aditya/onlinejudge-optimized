@@ -72,16 +72,24 @@ export const signin = async (req, res, next) => {
     const token = jwt.sign({
       id: validUser._id,
       role: validUser.role
-    }, process.env.JWT_SECRET);
+    }, process.env.JWT_SECRET, {
+      expiresIn: '1h' // Add explicit expiration
+    });
 
     const { password: hashedPassword, ...rest } = validUser._doc;
     const expiryDate = new Date(Date.now() + 3600000); // 1 hour
     
     res
-      .cookie('access_token', token, { httpOnly: true, expires: expiryDate })
+      .cookie('access_token', token, { 
+        httpOnly: true, 
+        expires: expiryDate,
+        secure: process.env.NODE_ENV === 'production', // Only secure in production
+        sameSite: 'lax' // Better CORS handling
+      })
       .status(200)
       .json({
         success: true,
+        token, // Also send token in response body for debugging
         ...rest
       });
       
@@ -97,7 +105,9 @@ export const google = async (req, res, next) => {
       const token = jwt.sign({ 
         id: user._id, 
         role: user.role 
-      }, process.env.JWT_SECRET);
+      }, process.env.JWT_SECRET, {
+        expiresIn: '1h'
+      });
       
       const { password: hashedPassword, ...rest } = user._doc;
       const expiryDate = new Date(Date.now() + 3600000); // 1 hour
@@ -105,9 +115,15 @@ export const google = async (req, res, next) => {
         .cookie('access_token', token, {
           httpOnly: true,
           expires: expiryDate,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax'
         })
         .status(200)
-        .json(rest);
+        .json({
+          success: true,
+          token,
+          ...rest
+        });
     } else {
       const generatedPassword =
         Math.random().toString(36).slice(-8) +
@@ -133,7 +149,9 @@ export const google = async (req, res, next) => {
       const token = jwt.sign({ 
         id: newUser._id, 
         role: newUser.role 
-      }, process.env.JWT_SECRET);
+      }, process.env.JWT_SECRET, {
+        expiresIn: '1h'
+      });
       
       const { password: hashedPassword2, ...rest } = newUser._doc;
       const expiryDate = new Date(Date.now() + 3600000); // 1 hour
@@ -141,9 +159,15 @@ export const google = async (req, res, next) => {
         .cookie('access_token', token, {
           httpOnly: true,
           expires: expiryDate,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax'
         })
         .status(200)
-        .json(rest);
+        .json({
+          success: true,
+          token,
+          ...rest
+        });
     }
   } catch (error) {
     next(error);
@@ -151,5 +175,8 @@ export const google = async (req, res, next) => {
 };
 
 export const signout = (req, res) => {
-  res.clearCookie('access_token').status(200).json('User has been logged out.');
-}
+  res.clearCookie('access_token').status(200).json({
+    success: true,
+    message: 'User has been logged out.'
+  });
+};
