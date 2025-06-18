@@ -2,78 +2,95 @@ import jwt from 'jsonwebtoken';
 import { errorHandler } from './error.js';
 
 export const verifytoken = (req, res, next) => {
-  let token = null;
+  // Enhanced debug info
+  const debugInfo = {
+    host: req.get('host'),
+    origin: req.get('origin'),
+    forwardedProto: req.get('x-forwarded-proto'),
+    userAgent: req.get('user-agent'),
+    cookies: req.cookies,
+    cookieHeader: req.headers.cookie,
+    authHeader: req.headers.authorization,
+    customHeaders: {
+      'x-access-token': req.headers['x-access-token'],
+      'x-auth-token': req.headers['x-auth-token']
+    },
+    method: req.method,
+    path: req.path
+  };
   
-  // 1. First check cookies
+  console.log('Token Verification Debug:', debugInfo);
+
+  let token = null;
+  let tokenSource = 'none';
+
+  // Priority 1: Check cookies (most secure)
   if (req.cookies && req.cookies.access_token) {
     token = req.cookies.access_token;
+    tokenSource = 'cookie';
   }
-  
-  // 2. If no cookie, check Authorization header
+
+  // Priority 2: Authorization Bearer header (AWS common)
   if (!token) {
     const authHeader = req.headers.authorization;
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      token = authHeader.substring(7);
+    if (authHeader) {
+      if (authHeader.startsWith('Bearer ')) {
+        token = authHeader.slice(7);
+        tokenSource = 'bearer';
+      } else if (authHeader.startsWith('Token ')) {
+        token = authHeader.slice(6);
+        tokenSource = 'token';
+      }
     }
   }
   
-  // 3. If still no token, check for token in request body (for debugging/testing)
-  if (!token && req.body && req.body.token) {
-    token = req.body.token;
-  }
-  
-  // 4. Check query parameters as fallback
-  if (!token && req.query && req.query.token) {
-    token = req.query.token;
-  }
-  
+  // Priority 3: Custom headers (fallback)
   if (!token) {
-    return next(errorHandler(401, 'Access denied. No token provided.'));
+    token = req.headers['x-access-token'] || req.headers['x-auth-token'];
+    if (token) {
+      tokenSource = 'custom-header';
+    }
   }
-  
+
+  // Priority 4: Query parameter (last resort, less secure)
+  if (!token && req.query.token) {
+    token = req.query.token;
+    tokenSource = 'query';
+  }
+
+  console.log(`Token found via: ${tokenSource}`);
+
+  if (!token) {
+    console.log('❌ No token found in any location');
+    return next(errorHandler(401, 'Access denied. No authentication token provided.'));
+  }
+
   try {
+    // Verify token
     const verified = jwt.verify(token, process.env.JWT_SECRET);
     req.user = verified;
+    
+    console.log('✅ Token verified successfully:', {
+      userId: verified.id,
+      role: verified.role,
+      tokenSource,
+      expiresAt: new Date(verified.exp * 1000).toISOString()
+    });
+    
     next();
   } catch (error) {
-    console.error('Token verification error:', error.message);
-    return next(errorHandler(401, 'Invalid token.'));
-  }
-};
-
-export const signin = async (req, res, next) => {
-  const { email, password } = req.body;
-  
-  try {
-    const validUser = await User.findOne({ email });
-    if (!validUser) return next(errorHandler(404, 'User not found'));
+    console.log('❌ Token verification failed:', {
+      error: error.message,
+      tokenSource,
+      tokenLength: token ? token.length : 0
+    });
     
-    const validPassword = bcryptjs.compareSync(password, validUser.password);
-    if (!validPassword) return next(errorHandler(401, 'Wrong credentials'));
-    
-    const token = jwt.sign({
-      id: validUser._id,
-      role: validUser.role
-    }, process.env.JWT_SECRET, { expiresIn: '1h' }); // Added expiration
-    
-    const { password: hashedPassword, ...rest } = validUser._doc;
-    const expiryDate = new Date(Date.now() + 3600000); // 1 hour
-    
-    res
-      .cookie('access_token', token, {
-        httpOnly: true,
-        expires: expiryDate,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
-      })
-      .status(200)
-      .json({
-        success: true,
-        token: token,
-        user: rest // Explicitly include user data
-      });
-      
-  } catch (error) {
-    next(error);
+    if (error.name === 'TokenExpiredError') {
+      return next(errorHandler(401, 'Token has expired. Please sign in again.'));
+    } else if (error.name === 'JsonWebTokenError') {
+      return next(errorHandler(401, 'Invalid token format.'));
+    } else {
+      return next(errorHandler(401, 'Token verification failed.'));
+    }
   }
 };

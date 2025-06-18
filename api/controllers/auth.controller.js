@@ -73,24 +73,60 @@ export const signin = async (req, res, next) => {
       id: validUser._id,
       role: validUser.role
     }, process.env.JWT_SECRET, {
-      expiresIn: '1h' // Add explicit expiration
+      expiresIn: '1h'
     });
 
     const { password: hashedPassword, ...rest } = validUser._doc;
-    const expiryDate = new Date(Date.now() + 3600000); // 1 hour
+    const expiryDate = new Date(Date.now() + 3600000);
     
+    // Enhanced AWS detection
+    const isProduction = process.env.NODE_ENV === 'production';
+    const host = req.get('host') || '';
+    const protocol = req.get('x-forwarded-proto') || req.protocol;
+    const isAWS = host.includes('amazonaws.com') || 
+                  host.includes('elasticbeanstalk.com') ||
+                  host.includes('cloudfront.net') ||
+                  protocol === 'https' ||
+                  req.headers['x-forwarded-for'] ||
+                  req.headers['x-amz-cf-id']; // CloudFront header
+    
+    // More permissive cookie settings for AWS
+    const cookieOptions = {
+      httpOnly: true,
+      expires: expiryDate,
+      secure: isProduction, // Only secure in production
+      sameSite: isAWS ? 'none' : 'lax',
+      path: '/',
+      domain: isAWS ? undefined : undefined // Let browser handle domain
+    };
+
+    // Debug logging
+    console.log('AWS Authentication Debug:', {
+      host,
+      protocol,
+      isAWS,
+      isProduction,
+      origin: req.get('origin'),
+      userAgent: req.get('user-agent'),
+      cookieOptions,
+      headers: {
+        'x-forwarded-proto': req.get('x-forwarded-proto'),
+        'x-forwarded-for': req.get('x-forwarded-for'),
+        'x-amz-cf-id': req.get('x-amz-cf-id')
+      }
+    });
+    
+    // Set cookie AND always return token in response for AWS reliability
     res
-      .cookie('access_token', token, { 
-        httpOnly: true, 
-        expires: expiryDate,
-        secure: process.env.NODE_ENV === 'production', // Only secure in production
-        sameSite: 'lax' // Better CORS handling
-      })
+      .cookie('access_token', token, cookieOptions)
       .status(200)
       .json({
         success: true,
-        token, // Also send token in response body for debugging
-        ...rest
+        token, // Critical for AWS - always include
+        user: rest,
+        message: 'Signed in successfully',
+        // Include auth instructions for frontend
+        authMethod: isAWS ? 'header' : 'cookie'
       });
       
   } catch (error) {

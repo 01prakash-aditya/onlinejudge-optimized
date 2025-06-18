@@ -1,5 +1,5 @@
 {
-  "name": "online-judge",
+  "name": "codekhana",
   "version": "1.0.0",
   "type": "module",
   "main": "index.js",
@@ -9,16 +9,16 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/01prakash-aditya/online-judge.git"
+    "url": "git+https://github.com/01prakash-aditya/onlinejudge-optimized.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/01prakash-aditya/online-judge/issues"
+    "url": "https://github.com/01prakash-aditya/onlinejudge-optimized/issues"
   },
-  "homepage": "https://github.com/01prakash-aditya/online-judge#readme",
-  "description": "**AlgoU** is an **Online Judge platform** built with the **MERN stack** (MongoDB, Express.js, React.js, Node.js). It supports coding contests with automatic code evaluation, problem management, and leaderboard functionality.",
+  "homepage": "https://github.com/01prakash-aditya/onlinejudge-optimized#readme",
+  "description": "**CodeKhana** is an **Online Judge platform** built with the **MERN stack** (MongoDB, Express.js, React.js, Node.js). It supports coding contests with automatic code evaluation, problem management, and leaderboard functionality.",
   "dependencies": {
     "@google/genai": "^1.0.1",
     "bcrypt": "^6.0.0",
@@ -32,6 +32,8 @@
     "mongodb": "^6.16.0",
     "mongoose": "^8.14.3",
     "nodemon": "^3.1.10",
-    "react-redux": "^9.2.0"
+    "react-redux": "^9.2.0",
+    "redux": "^5.0.1",
+    "session": "^0.1.0"
   }
 }
