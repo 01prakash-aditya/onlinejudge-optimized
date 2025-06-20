@@ -7,6 +7,8 @@ import authRoutes from './routes/auth.route.js';
 import problemRoutes from './routes/problem.route.js';
 import communityRoutes from './routes/community.route.js';
 import cookieParser from 'cookie-parser';
+import https from 'https';
+import fs from 'fs';
 
 dotenv.config();
 
@@ -46,6 +48,15 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, () => {
-    console.log('Server is running on port 3000!');
-});
+const sslOptions = {
+  key: fs.readFileSync('./ssl/privatekey.pem'),
+  cert: fs.readFileSync('./ssl/certificate.pem'),
+};
+
+// https.createServer(sslOptions, app).listen(PORT, () => {
+//   console.log(`🚀 HTTPS Server is running on http://localhost:${PORT}`);
+// });
+
+app.listen(PORT,'0.0.0.0',() => {
+    console.log(`🚀 Server is running on http://0.0.0.0:${PORT}`);
+    });

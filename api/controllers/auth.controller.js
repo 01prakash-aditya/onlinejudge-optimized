@@ -77,56 +77,36 @@ export const signin = async (req, res, next) => {
     });
 
     const { password: hashedPassword, ...rest } = validUser._doc;
-    const expiryDate = new Date(Date.now() + 3600000);
+    const expiryDate = new Date(Date.now() + 3600000); // 1 hour
     
-    // Enhanced AWS detection
-    const isProduction = process.env.NODE_ENV === 'production';
-    const host = req.get('host') || '';
-    const protocol = req.get('x-forwarded-proto') || req.protocol;
-    const isAWS = host.includes('amazonaws.com') || 
-                  host.includes('elasticbeanstalk.com') ||
-                  host.includes('cloudfront.net') ||
-                  protocol === 'https' ||
-                  req.headers['x-forwarded-for'] ||
-                  req.headers['x-amz-cf-id']; // CloudFront header
-    
-    // More permissive cookie settings for AWS
+    // Simplified cookie options for local development with self-signed HTTPS
     const cookieOptions = {
-      httpOnly: true,
+      httpOnly: true,         // Prevents JS access to token (secure)
       expires: expiryDate,
-      secure: isProduction, // Only secure in production
-      sameSite: isAWS ? 'none' : 'lax',
+      secure: false,          // ❗ Required for self-signed HTTPS certificates
+      sameSite: 'Lax',       // ✅ Allows cross-origin requests from localhost:5173
       path: '/',
-      domain: isAWS ? undefined : undefined // Let browser handle domain
     };
 
-    // Debug logging
-    console.log('AWS Authentication Debug:', {
-      host,
-      protocol,
-      isAWS,
-      isProduction,
+    // Debug logging for development
+    console.log('Authentication Debug:', {
+      host: req.get('host'),
       origin: req.get('origin'),
-      userAgent: req.get('user-agent'),
+      protocol: req.get('x-forwarded-proto') || req.protocol,
       cookieOptions,
-      headers: {
-        'x-forwarded-proto': req.get('x-forwarded-proto'),
-        'x-forwarded-for': req.get('x-forwarded-for'),
-        'x-amz-cf-id': req.get('x-amz-cf-id')
-      }
+      userAgent: req.get('user-agent')
     });
     
-    // Set cookie AND always return token in response for AWS reliability
+    // Set cookie and return response
     res
       .cookie('access_token', token, cookieOptions)
       .status(200)
       .json({
         success: true,
-        token, // Critical for AWS - always include
+        token,              // Include token in response body as backup
         user: rest,
         message: 'Signed in successfully',
-        // Include auth instructions for frontend
-        authMethod: isAWS ? 'header' : 'cookie'
+        authMethod: 'cookie'
       });
       
   } catch (error) {
@@ -147,12 +127,14 @@ export const google = async (req, res, next) => {
       
       const { password: hashedPassword, ...rest } = user._doc;
       const expiryDate = new Date(Date.now() + 3600000); // 1 hour
+      
       res
         .cookie('access_token', token, {
           httpOnly: true,
           expires: expiryDate,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'lax'
+          secure: false,      // ❗ Required for self-signed HTTPS
+          sameSite: 'Lax',   // ✅ Allows cross-origin requests
+          path: '/'
         })
         .status(200)
         .json({
@@ -191,12 +173,14 @@ export const google = async (req, res, next) => {
       
       const { password: hashedPassword2, ...rest } = newUser._doc;
       const expiryDate = new Date(Date.now() + 3600000); // 1 hour
+      
       res
         .cookie('access_token', token, {
           httpOnly: true,
           expires: expiryDate,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'lax'
+          secure: false,      // ❗ Required for self-signed HTTPS
+          sameSite: 'Lax',   // ✅ Allows cross-origin requests
+          path: '/'
         })
         .status(200)
         .json({
@@ -211,7 +195,12 @@ export const google = async (req, res, next) => {
 };
 
 export const signout = (req, res) => {
-  res.clearCookie('access_token').status(200).json({
+  res.clearCookie('access_token', {
+    httpOnly: true,
+    secure: false,    // ❗ Must match the original cookie settings
+    sameSite: 'Lax',
+    path: '/'
+  }).status(200).json({
     success: true,
     message: 'User has been logged out.'
   });

@@ -109,6 +109,5 @@ app.get('/', (req, res) => {
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server is running on http://0.0.0.0:${PORT}`);
-  console.log(`Network access: http://192.168.130.234:${PORT}`);
   console.log('Supported languages: C++, Python 3, Java');
 });
